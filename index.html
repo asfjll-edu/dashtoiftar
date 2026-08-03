@@ -15,6 +15,9 @@
 <div class="console-brand">DASH-TO-IFTAR HANDHELD</div>
 <div id="game-wrap">
 
+  <!-- Canvas SENTIASA di-mount (bukan di dalam .screen) supaya saiznya betul walau screen mana aktif -->
+  <canvas id="game-canvas"></canvas>
+
   <!-- ============ SKRIN NAMA ============ -->
   <div id="screen-name" class="screen active">
     <div class="glass-card intro-card">
@@ -30,9 +33,8 @@
     </div>
   </div>
 
-  <!-- ============ SKRIN PERMAINAN ============ -->
+  <!-- ============ SKRIN PERMAINAN (overlay HUD sahaja, canvas di luar) ============ -->
   <div id="screen-game" class="screen">
-    <canvas id="game-canvas"></canvas>
 
     <!-- HUD -->
     <div id="hud">

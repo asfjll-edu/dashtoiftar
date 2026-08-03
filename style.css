@@ -1,0 +1,343 @@
+:root{
+  --gold: #FFC93C;
+  --gold-deep: #E8A317;
+  --coral: #FF5D73;
+  --coral-deep: #D93A52;
+  --night: #1B1035;
+  --night-2: #3A1E6D;
+  --cream: #FFF6E9;
+  --glass-bg: rgba(255,255,255,0.14);
+  --glass-border: rgba(255,255,255,0.35);
+  --font-display: 'Baloo 2', system-ui, sans-serif;
+  --font-body: 'Nunito', system-ui, sans-serif;
+}
+
+*{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; user-select:none;}
+
+html,body{
+  height:100%;
+  overflow:hidden;
+  background: linear-gradient(160deg, var(--night) 0%, var(--night-2) 55%, #5A2E8C 100%);
+  font-family: var(--font-body);
+  color: var(--cream);
+}
+
+#game-wrap{
+  position:relative;
+  width:100vw;
+  height:100vh;
+  max-width:520px;
+  aspect-ratio: 9/16;
+  margin:0 auto;
+  overflow:hidden;
+  background:#0d0620;
+  box-shadow: 0 0 60px rgba(0,0,0,0.6);
+}
+
+@media (min-width:521px){
+  body{ display:flex; align-items:center; justify-content:center; }
+  #game-wrap{ height:min(100vh, 920px); border-radius:22px; }
+}
+
+.screen{
+  position:absolute; inset:0;
+  display:none;
+  align-items:center; justify-content:center;
+  padding:24px;
+  text-align:center;
+}
+.screen.active{ display:flex; }
+
+/* ============ GLASS CARD ============ */
+.glass-card{
+  width:100%;
+  background: var(--glass-bg);
+  border: 1.5px solid var(--glass-border);
+  border-radius: 26px;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.25);
+  padding: 28px 22px;
+}
+
+/* ============ SKRIN NAMA ============ */
+#screen-name{ background:
+  radial-gradient(circle at 50% 20%, #4A2A80 0%, transparent 60%),
+  linear-gradient(160deg, var(--night) 0%, var(--night-2) 60%, #5A2E8C 100%);
+}
+.moon-deco{ font-size:56px; margin-bottom:4px; filter: drop-shadow(0 0 18px rgba(255,201,60,0.6)); }
+.title-game{
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 34px;
+  line-height: 1.05;
+  letter-spacing: 0.5px;
+  color: var(--cream);
+  margin-bottom: 10px;
+}
+.title-game span{
+  color: var(--gold);
+  text-shadow: 0 0 22px rgba(255,201,60,0.7);
+}
+.subtitle{
+  font-size: 15px;
+  opacity: 0.9;
+  margin-bottom: 22px;
+  line-height:1.4;
+}
+.name-input{
+  width:100%;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1.5px solid var(--glass-border);
+  background: rgba(255,255,255,0.12);
+  color: var(--cream);
+  font-family: var(--font-body);
+  font-weight:700;
+  font-size: 16px;
+  text-align:center;
+  margin-bottom: 16px;
+  outline:none;
+}
+.name-input::placeholder{ color: rgba(255,246,233,0.55); font-weight:600;}
+
+.btn-primary, .btn-secondary{
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 17px;
+  border: none;
+  border-radius: 18px;
+  padding: 15px 20px;
+  width: 100%;
+  cursor: pointer;
+  transition: transform 0.12s ease, filter 0.12s ease;
+}
+.btn-primary{
+  background: linear-gradient(180deg, var(--gold) 0%, var(--gold-deep) 100%);
+  color: #3A2200;
+  box-shadow: 0 6px 0 #A9750C, 0 8px 18px rgba(0,0,0,0.35);
+}
+.btn-secondary{
+  background: linear-gradient(180deg, #ffffff 0%, #e3ddf5 100%);
+  color: var(--night-2);
+  box-shadow: 0 6px 0 #9b8fc4, 0 8px 18px rgba(0,0,0,0.3);
+  margin-bottom: 12px;
+}
+.btn-primary:active, .btn-secondary:active{
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 #A9750C, 0 4px 10px rgba(0,0,0,0.3);
+}
+.controls-hint{
+  margin-top: 20px;
+  display:flex; flex-direction:column; gap:6px;
+  font-size: 11px;
+  opacity: 0.75;
+}
+
+/* ============ SKRIN GAME ============ */
+#screen-game{ padding:0; }
+#game-canvas{
+  position:absolute; inset:0;
+  width:100%; height:100%;
+  display:block;
+  touch-action: none;
+}
+
+#hud{
+  position:absolute;
+  top: 14px; left:14px; right:14px;
+  display:flex; flex-direction:column; gap:8px;
+  z-index: 5;
+}
+.bar-row{ display:flex; align-items:center; gap:8px; }
+.bar-icon{ font-size:18px; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5)); }
+.bar-track{
+  flex:1;
+  height: 16px;
+  border-radius: 10px;
+  background: rgba(0,0,0,0.35);
+  border: 1.5px solid rgba(255,255,255,0.3);
+  overflow:hidden;
+  backdrop-filter: blur(6px);
+}
+.bar-fill{
+  height:100%;
+  width:100%;
+  border-radius: 10px;
+  transition: width 0.25s ease;
+}
+.bar-energy{ background: linear-gradient(90deg, var(--coral-deep), var(--coral)); }
+.bar-pahala{ background: linear-gradient(90deg, var(--gold-deep), var(--gold)); }
+.bar-txt{
+  font-size: 11px; font-weight:800;
+  min-width: 42px; text-align:right;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+}
+
+#distance-hud{
+  position:absolute;
+  top:14px; right:14px;
+  transform: translateY(58px);
+  font-size: 11px; font-weight:700;
+  background: rgba(0,0,0,0.35);
+  border:1px solid rgba(255,255,255,0.25);
+  padding: 4px 10px;
+  border-radius: 20px;
+  z-index:5;
+}
+
+.icon-btn{
+  position:absolute;
+  bottom: 110px; right:14px;
+  width:42px; height:42px;
+  border-radius:50%;
+  border:1.5px solid rgba(255,255,255,0.3);
+  background: rgba(0,0,0,0.35);
+  color: var(--cream);
+  font-size:18px;
+  z-index:5;
+  cursor:pointer;
+}
+
+.toast{
+  position:absolute;
+  top: 90px; left:50%;
+  transform: translateX(-50%) translateY(-10px);
+  background: rgba(0,0,0,0.55);
+  border: 1.5px solid rgba(255,255,255,0.3);
+  padding: 8px 18px;
+  border-radius: 14px;
+  font-family: var(--font-display);
+  font-weight:700;
+  font-size: 14px;
+  opacity:0;
+  pointer-events:none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 6;
+  white-space:nowrap;
+}
+.toast.show{ opacity:1; transform: translateX(-50%) translateY(0); }
+
+#mobile-controls{
+  position:absolute;
+  bottom:16px; left:14px; right:14px;
+  display:flex; gap:12px;
+  z-index:5;
+}
+.touch-btn{
+  flex:1;
+  background: rgba(255,255,255,0.14);
+  border: 1.5px solid rgba(255,255,255,0.3);
+  border-radius: 18px;
+  padding: 12px 0;
+  text-align:center;
+  font-size: 22px;
+  backdrop-filter: blur(8px);
+}
+.touch-btn span{
+  display:block;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight:700;
+  margin-top:2px;
+}
+.touch-btn:active{ background: rgba(255,255,255,0.3); }
+
+/* ============ DILEMA MORAL ============ */
+.dilemma-overlay{
+  position:absolute; inset:0;
+  display:none;
+  align-items:center; justify-content:center;
+  background: rgba(10,4,25,0.55);
+  backdrop-filter: blur(3px);
+  z-index: 20;
+  padding: 24px;
+}
+.dilemma-overlay.show{ display:flex; }
+.dilemma-card{ text-align:center; }
+.dilemma-timer{
+  font-family: var(--font-display);
+  font-size: 34px;
+  font-weight:800;
+  color: var(--gold);
+  margin-bottom: 6px;
+}
+.dilemma-emoji{ font-size: 48px; margin-bottom: 8px; }
+.dilemma-text{
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 18px;
+}
+.dilemma-choices{ display:flex; gap:12px; }
+.dilemma-btn{
+  flex:1;
+  border:none;
+  border-radius:16px;
+  padding: 14px 8px;
+  font-family: var(--font-body);
+  font-weight:800;
+  font-size: 14px;
+  cursor:pointer;
+  line-height:1.5;
+}
+.dilemma-btn small{ font-weight:600; font-size:11px; opacity:0.85; }
+.help-btn{ background: linear-gradient(180deg,#8DE7A0,#4CAF6E); color:#0A3318; }
+.run-btn{ background: linear-gradient(180deg,#F5C6D0,#E88CA0); color:#5A0F22; }
+
+/* ============ SKRIN KEPUTUSAN ============ */
+#screen-result{
+  background: radial-gradient(circle at 50% 15%, #4A2A80 0%, transparent 55%),
+  linear-gradient(160deg, var(--night) 0%, var(--night-2) 60%, #5A2E8C 100%);
+  overflow-y:auto;
+}
+.lantern-scene{ font-size: 34px; margin-bottom: 6px; }
+.result-title{
+  font-family: var(--font-display);
+  font-size: 26px; font-weight:800;
+  color: var(--gold);
+}
+.result-sub{ font-size:13px; opacity:0.85; margin-bottom:16px; }
+
+.cert-box{
+  background: linear-gradient(160deg, #fff8e8, #ffe9c2);
+  color: #4A2E0A;
+  border-radius: 18px;
+  padding: 18px;
+  border: 3px solid var(--gold);
+  margin-bottom: 16px;
+}
+.cert-header{
+  font-family: var(--font-display);
+  font-weight:800;
+  font-size: 15px;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+.cert-name{
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  color: #A9750C;
+  margin-bottom: 4px;
+}
+.cert-rank{ font-size: 15px; font-weight:800; margin-bottom: 10px; }
+.cert-stats{
+  display:flex; justify-content:space-around;
+  font-size: 13px; font-weight:700;
+  border-top: 2px dashed #D9B26A;
+  padding-top: 10px;
+}
+
+.reflection-list{
+  text-align:left;
+  background: rgba(255,255,255,0.1);
+  border: 1.5px solid rgba(255,255,255,0.25);
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-bottom: 18px;
+  font-size: 12.5px;
+  display:flex; flex-direction:column; gap:6px;
+}
+
+.result-buttons{ width:100%; }

@@ -13,31 +13,49 @@
 <div id="console-frame">
 <div class="console-led"></div>
 <div class="console-brand">DASH-TO-IFTAR HANDHELD</div>
-<div id="game-wrap">
 
-  <!-- Canvas SENTIASA di-mount (bukan di dalam .screen) supaya saiznya betul walau screen mana aktif -->
-  <canvas id="game-canvas"></canvas>
+<div class="console-body">
 
-  <!-- ============ SKRIN NAMA ============ -->
-  <div id="screen-name" class="screen active">
-    <div class="glass-card intro-card">
-      <div class="moon-deco">🌙</div>
-      <h1 class="title-game">DASH TO<br><span>IFTAR</span></h1>
-      <p class="subtitle">Bantu Adam berlari pulang sebelum azan Maghrib berkumandang!</p>
-      <input id="input-name" class="name-input" type="text" maxlength="14" placeholder="Tulis nama kamu di sini...">
-      <button id="btn-start" class="btn-primary">🏃‍♂️ Mula Berlari</button>
-      <div class="controls-hint">
-        <span>⌨️ SPACE / ↑ = Lompat &nbsp;•&nbsp; ↓ = Gelongsor</span>
-        <span>📱 Ketik Kiri = Lompat &nbsp;•&nbsp; Ketik Kanan = Gelongsor</span>
-      </div>
+  <!-- ============ JOY-CON KIRI (MERAH) ============ -->
+  <div class="joycon joycon-left" id="joycon-left">
+    <div class="joycon-cap"></div>
+    <div class="stick" id="stick-left"><div class="stick-ball"></div></div>
+    <div class="dpad">
+      <button class="dpad-btn dpad-up" data-action="jump" aria-label="Lompat">▲</button>
+      <button class="dpad-btn dpad-left" data-action="none" aria-label="Kiri">◀</button>
+      <button class="dpad-btn dpad-right" data-action="none" aria-label="Kanan">▶</button>
+      <button class="dpad-btn dpad-down" data-action="slide" aria-label="Gelongsor">▼</button>
     </div>
+    <button class="side-btn minus-btn" id="btn-minus" aria-label="Kurang">−</button>
+    <div class="joycon-led"></div>
   </div>
 
-  <!-- ============ SKRIN PERMAINAN (overlay HUD sahaja, canvas di luar) ============ -->
-  <div id="screen-game" class="screen">
+  <div id="game-wrap">
 
-    <!-- HUD -->
-    <div id="hud">
+    <!-- Canvas SENTIASA di-mount (bukan di dalam .screen) supaya saiznya betul walau screen mana aktif -->
+    <canvas id="game-canvas"></canvas>
+    <div class="screen-gloss"></div>
+
+    <!-- ============ SKRIN NAMA ============ -->
+    <div id="screen-name" class="screen active">
+      <div class="glass-card intro-card">
+        <div class="moon-deco">🌙</div>
+        <h1 class="title-game">DASH TO<br><span>IFTAR</span></h1>
+        <p class="subtitle">Bantu Adam berlari pulang sebelum azan Maghrib berkumandang!</p>
+        <input id="input-name" class="name-input" type="text" maxlength="14" placeholder="Tulis nama kamu di sini...">
+        <button id="btn-start" class="btn-primary">🏃‍♂️ Mula Berlari</button>
+        <div class="controls-hint">
+          <span>⌨️ SPACE / ↑ = Lompat &nbsp;•&nbsp; ↓ = Gelongsor</span>
+          <span>🎮 Guna Joy-Con di sisi atau sentuh skrin</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ SKRIN PERMAINAN (overlay HUD sahaja, canvas di luar) ============ -->
+    <div id="screen-game" class="screen">
+
+      <!-- HUD -->
+      <div id="hud">
       <div class="bar-row">
         <span class="bar-icon">❤️</span>
         <div class="bar-track">
@@ -111,8 +129,24 @@
     </div>
   </div>
 
-</div>
-</div>
+  </div><!-- /#game-wrap -->
+
+  <!-- ============ JOY-CON KANAN (BIRU) ============ -->
+  <div class="joycon joycon-right" id="joycon-right">
+    <div class="joycon-cap"></div>
+    <button class="side-btn plus-btn" id="btn-plus" aria-label="Tambah / Mute">+</button>
+    <div class="abxy">
+      <button class="abxy-btn btn-x" data-action="jump" aria-label="X">X</button>
+      <button class="abxy-btn btn-y" data-action="slide" aria-label="Y">Y</button>
+      <button class="abxy-btn btn-a" data-action="jump" aria-label="A">A</button>
+      <button class="abxy-btn btn-b" data-action="slide" aria-label="B">B</button>
+    </div>
+    <div class="stick" id="stick-right"><div class="stick-ball"></div></div>
+    <div class="joycon-led"></div>
+  </div>
+
+</div><!-- /.console-body -->
+</div><!-- /#console-frame -->
 
 <script src="game.js"></script>
 </body>

@@ -89,6 +89,7 @@ class Synth {
   sfxVictory(){
     [523,659,784,1046,1318].forEach((f,i)=> this.tone(f,0.3,"square",0.42,i*0.14));
   }
+  sfxClick(){ this.tone(300,0.045,"square",0.22,0); }
   // ---------- BGM ----------
   setPhase(p){
     if(this.phase === p) return;
@@ -1029,11 +1030,61 @@ canvas.addEventListener("pointerdown",(e)=>{
 $("btn-choice-left").addEventListener("click", ()=> resolveDilemma(true));
 $("btn-choice-right").addEventListener("click", ()=> resolveDilemma(false));
 
-$("btn-mute").addEventListener("click", ()=>{
+function toggleMute(){
   synth.unlock();
   const m = !synth.muted;
   synth.setMute(m);
   $("btn-mute").textContent = m ? "🔇" : "🔊";
+}
+$("btn-mute").addEventListener("click", toggleMute);
+
+/* ---------- JOY-CON: D-Pad & ABXY (data-action = jump/slide/none) ---------- */
+document.querySelectorAll(".dpad-btn, .abxy-btn").forEach(btn=>{
+  const action = btn.dataset.action;
+  const press = (e)=>{
+    e.preventDefault();
+    synth.unlock();
+    btn.classList.add("pressed");
+    synth.sfxClick();
+    if(state.screen==="game" && !state.paused){
+      if(action==="jump") jump();
+      else if(action==="slide") slide();
+    }
+  };
+  const release = ()=> btn.classList.remove("pressed");
+  btn.addEventListener("pointerdown", press);
+  btn.addEventListener("pointerup", release);
+  btn.addEventListener("pointerleave", release);
+  btn.addEventListener("pointercancel", release);
+});
+
+/* ---------- JOY-CON: Plus (mute/pause toggle per spec), Minus (decorative) ---------- */
+$("btn-plus").addEventListener("pointerdown",(e)=>{
+  e.preventDefault();
+  $("btn-plus").classList.add("pressed");
+  synth.sfxClick();
+  toggleMute();
+});
+$("btn-minus").addEventListener("pointerdown",(e)=>{
+  e.preventDefault();
+  $("btn-minus").classList.add("pressed");
+  synth.unlock();
+  synth.sfxClick();
+});
+["btn-minus","btn-plus"].forEach(id=>{
+  const btn = $(id);
+  const release = ()=> btn.classList.remove("pressed");
+  btn.addEventListener("pointerup", release);
+  btn.addEventListener("pointerleave", release);
+  btn.addEventListener("pointercancel", release);
+});
+
+/* ---------- JOY-CON: Analog stick press feedback (decorative) ---------- */
+document.querySelectorAll(".stick").forEach(st=>{
+  st.addEventListener("pointerdown", ()=>{ st.classList.add("pressed"); synth.sfxClick(); });
+  const release = ()=> st.classList.remove("pressed");
+  st.addEventListener("pointerup", release);
+  st.addEventListener("pointerleave", release);
 });
 
 $("btn-start").addEventListener("click", ()=>{

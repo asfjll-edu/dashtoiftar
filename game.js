@@ -121,9 +121,9 @@ const synth = new Synth();
    2. STATE
 ============================================================ */
 const STAGE = {
-  DAY:   { min:0,    max:600,  sky:["#8FD3F4","#FFE29A"], label:"Pintu Sekolah" },
-  SUNSET:{ min:600,  max:1400, sky:["#FF9A5A","#FF5D73"], label:"Jalan Kampung" },
-  NIGHT: { min:1400, max:2000, sky:["#241546","#5A2E8C"], label:"Kawasan Masjid" }
+  DAY:   { min:0,    max:500,  sky:["#8FD3F4","#FFE29A"], label:"Pintu Sekolah",   speed:4.2 },
+  SUNSET:{ min:500,  max:1200, sky:["#FF9A5A","#FF5D73"], label:"Jalan Kampung",   speed:5.8 },
+  NIGHT: { min:1200, max:2000, sky:["#241546","#5A2E8C"], label:"Kawasan Masjid",  speed:7.4 }
 };
 
 const state = {
@@ -194,11 +194,11 @@ let bgClouds = [];
 let bgStars = [];
 
 const ITEM_TYPES = [
-  { key:"star",  emoji:"⭐", kind:"item", effect:"pahala", amount:10 },
-  { key:"kurma", emoji:"🌴", kind:"item", effect:"energy", amount:15 },
-  { key:"quran", emoji:"📖", kind:"item", effect:"pahala", amount:20, shield:true },
-  { key:"tasbih",emoji:"🤲", kind:"item", effect:"pahala", amount:10 },
-  { key:"air",   emoji:"💧", kind:"item", effect:"energy", amount:15 }
+  { key:"star",  emoji:"⭐", kind:"item", pahala:10, energy:5 },
+  { key:"kurma", emoji:"🌴", kind:"item", pahala:5,  energy:15 },
+  { key:"quran", emoji:"📖", kind:"item", pahala:20, energy:0, shield:true },
+  { key:"tasbih",emoji:"🤲", kind:"item", pahala:10, energy:0 },
+  { key:"air",   emoji:"💧", kind:"item", pahala:5,  energy:15 }
 ];
 const OBSTACLE_GROUND = [
   { key:"burger", emoji:"🍔" },
@@ -514,7 +514,8 @@ function update(dt){
 
   // distance & difficulty
   state.distance += (worldSpeed*dt*60)/8;
-  state.speed = clamp(4.4 + state.distance/2000*3.4, 4.4, 8.2);
+  const targetSpeed = currentStage().speed;
+  state.speed += (targetSpeed - state.speed) * clamp(dt*1.2, 0, 1);
 
   // energy drain
   state.energy -= 2*dt;
@@ -590,11 +591,8 @@ function update(dt){
 }
 
 function collectItem(o){
-  if(o.effect==="energy"){
-    state.energy = clamp(state.energy + o.amount, 0, 100);
-  } else {
-    state.pahala += o.amount;
-  }
+  if(o.energy) state.energy = clamp(state.energy + o.energy, 0, 100);
+  if(o.pahala) state.pahala += o.pahala;
   if(o.shield){ state.shieldTime = 5; }
   if(o.key==="kurma") state.stats.kurma++;
   if(o.key==="air") state.stats.air++;
@@ -609,21 +607,20 @@ function collectItem(o){
 function hitObstacle(o){
   triggerShake(6, 0.25);
   synth.sfxHitBad();
+  // Sistem bersepadu: setiap halangan = Tenaga -20%, Ramadan Points -10
+  state.energy = clamp(state.energy-20,0,100);
+  state.pahala = Math.max(0,state.pahala-10);
   if(o.key==="burger"||o.key==="fries"||o.key==="soda"){
-    state.energy = clamp(state.energy-25,0,100);
-    state.slowTime = 2;
     state.stats.junk++;
     toast("😵 Batal Puasa!");
   } else if(o.key==="marah"){
-    state.pahala = Math.max(0,state.pahala-15);
     state.stats.marah++;
     toast("💢 Pahala Lebur!");
   } else if(o.key==="phone"){
-    state.pahala = Math.max(0,state.pahala-15);
     state.stats.distraksi++;
     toast("📵 Pahala Lebur!");
   }
-  if(state.energy<=0){ state.energy=0; endGame(); }
+  if(state.energy<=0){ state.energy=0; endGame(false); }
 }
 
 /* ============================================================
@@ -735,9 +732,18 @@ function endGame(won=false){
   if(state.gameOver) return;
   state.gameOver = true;
   state.running = false;
-  if(won) synth.sfxVictory(); else synth.sfxFanfare();
+  if(won){
+    synth.sfxVictory();
+    $("result-title").textContent = "Alhamdulillah!";
+    $("result-sub").textContent = "Adam sampai ke rumah sebelum Maghrib untuk berbuka puasa";
+  } else {
+    synth.sfxHitBad();
+    $("result-title").textContent = "Adam Keletihan!";
+    $("result-sub").textContent = "Tenaga Adam habis sebelum sampai ke rumah. Cuba lagi, ya!";
+  }
   buildResult();
   showScreen("result");
+  startFamilyScene(won);
 }
 
 function rankFor(pt){
@@ -836,6 +842,98 @@ function roundRectCtx(g,x,y,w,h,r,fill){
 }
 
 /* ============================================================
+   16b. ANIMASI KELUARGA DI MEJA MAKAN (procedural, win only)
+============================================================ */
+let familyAnim = null;
+function startFamilyScene(won){
+  if(familyAnim) cancelAnimationFrame(familyAnim);
+  const fc = $("family-canvas");
+  const fg = fc.getContext("2d");
+  const fw = fc.width, fh = fc.height;
+  let tt = 0;
+
+  function drawPerson(g,x,y,color,armPhase){
+    g.save(); g.translate(x,y);
+    g.fillStyle = color;
+    g.beginPath(); g.arc(0,-26,10,0,Math.PI*2); g.fill(); // head
+    roundRectCtx(g,-11,-16,22,28,6,color); // body
+    g.strokeStyle = color; g.lineWidth=5; g.lineCap="round";
+    g.beginPath();
+    g.moveTo(-11,-6); g.lineTo(-20,-2+armPhase);
+    g.moveTo(11,-6); g.lineTo(20,-2-armPhase);
+    g.stroke();
+    g.restore();
+  }
+
+  function frame(){
+    tt += 0.05;
+    fg.clearRect(0,0,fw,fh);
+
+    if(!won){
+      // ringkas: langit gelap, mihrab kosong, ajakan cuba lagi
+      const gr = fg.createLinearGradient(0,0,0,fh);
+      gr.addColorStop(0,"#2b1b46"); gr.addColorStop(1,"#160e2c");
+      fg.fillStyle = gr; fg.fillRect(0,0,fw,fh);
+      fg.font = "40px sans-serif"; fg.textAlign="center"; fg.textBaseline="middle";
+      fg.fillText("🥲", fw/2, fh/2-6);
+      familyAnim = null;
+      return;
+    }
+
+    // langit malam ungu + bintang
+    const gr = fg.createLinearGradient(0,0,0,fh);
+    gr.addColorStop(0,"#2c1a4d"); gr.addColorStop(1,"#4a2b7a");
+    fg.fillStyle = gr; fg.fillRect(0,0,fw,fh);
+    for(let i=0;i<14;i++){
+      const sx = (i*37)%fw, sy=(i*53)%(fh*0.5);
+      fg.globalAlpha = 0.4+Math.sin(tt+i)*0.4;
+      fg.fillStyle="#fff";
+      fg.beginPath(); fg.arc(sx,sy,1.4,0,Math.PI*2); fg.fill();
+    }
+    fg.globalAlpha=1;
+
+    // siluet menara masjid kecil
+    fg.fillStyle = "rgba(20,10,40,0.8)";
+    fg.fillRect(fw-40, fh*0.15, 6,50);
+    fg.beginPath(); fg.arc(fw-37, fh*0.15, 6,0,Math.PI*2); fg.fill();
+
+    // meja
+    fg.fillStyle = "#6B4A2E";
+    roundRectCtx(fg, fw*0.15, fh*0.72, fw*0.7, 10, 4, "#6B4A2E");
+    fg.fillRect(fw*0.2, fh*0.74, 6, fh*0.2);
+    fg.fillRect(fw*0.75, fh*0.74, 6, fh*0.2);
+
+    // hidangan di atas meja
+    fg.font="16px sans-serif"; fg.textAlign="center";
+    fg.fillText("🍽️", fw*0.3, fh*0.70);
+    fg.fillText("🌴", fw*0.5, fh*0.70);
+    fg.fillText("🍲", fw*0.7, fh*0.70);
+
+    // keluarga (ayah, ibu, Adam) duduk di sekeliling meja — lengan bergerak (makan/berbual)
+    const armPhase = Math.sin(tt*2)*3;
+    drawPerson(fg, fw*0.28, fh*0.68, "#3E7CB1", armPhase);
+    drawPerson(fg, fw*0.5, fh*0.68, "#D96B8A", -armPhase);
+    drawPerson(fg, fw*0.72, fh*0.68, "#F2C79E", armPhase*0.7);
+
+    // tanglung Ramadan berayun + berkelip
+    const swing = Math.sin(tt*1.3)*6;
+    fg.save();
+    fg.translate(fw*0.15, fh*0.18);
+    fg.rotate(swing*Math.PI/180);
+    fg.strokeStyle="rgba(255,255,255,0.4)"; fg.lineWidth=1;
+    fg.beginPath(); fg.moveTo(0,-14); fg.lineTo(0,0); fg.stroke();
+    fg.fillStyle = `rgba(255,${180+Math.sin(tt*3)*40},60,0.95)`;
+    roundRectCtx(fg,-9,0,18,22,7, fg.fillStyle);
+    fg.fillStyle="rgba(255,220,150,0.9)";
+    fg.fillRect(-2,20,4,6);
+    fg.restore();
+
+    familyAnim = requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+/* ============================================================
    17. INPUT
 ============================================================ */
 function firstTouchUnlock(){
@@ -882,6 +980,7 @@ $("btn-start").addEventListener("click", ()=>{
 $("input-name").addEventListener("keydown",(e)=>{ if(e.key==="Enter") $("btn-start").click(); });
 
 $("btn-restart").addEventListener("click", ()=>{
+  if(familyAnim){ cancelAnimationFrame(familyAnim); familyAnim=null; }
   showScreen("name");
 });
 $("btn-screenshot").addEventListener("click", saveCertificate);

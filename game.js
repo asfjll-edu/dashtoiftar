@@ -192,6 +192,18 @@ let objects = [];
 let spawnCooldown = 0;
 let bgClouds = [];
 let bgStars = [];
+let particles = [];
+let floaters = [];
+
+function burst(x,y,color,n){
+  for(let i=0;i<n;i++){
+    const a = rand(0,Math.PI*2), s = rand(60,220);
+    particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,r:rand(2,6),age:0,life:rand(0.4,0.9),color});
+  }
+}
+function addFloater(text,x,y,color){
+  floaters.push({text,x,y,vy:-55,age:0,life:1.0,color});
+}
 
 const ITEM_TYPES = [
   { key:"star",  emoji:"⭐", kind:"item", pahala:10, energy:5 },
@@ -467,20 +479,56 @@ function roundRect(x,y,w,h,r,fill,stroke){
 }
 
 function drawObjects(){
-  ctx.font = "26px sans-serif";
   ctx.textAlign="center"; ctx.textBaseline="middle";
   objects.forEach(o=>{
     if(o.collected || o.hit) return;
     const bobY = o.kind==="item" ? Math.sin((o.x+Date.now()/6)*0.02)*5 : 0;
+    const cx = o.x + o.w/2, cy = o.y + o.h/2 + bobY;
+    const glowColor = o.kind==="item" ? (o.shield ? "#8AD6FF" : "#FFD24A") : "#FF5D73";
+    const size = Math.max(o.w,o.h);
+
     ctx.save();
-    ctx.translate(o.x + o.w/2, o.y + o.h/2 + bobY);
-    if(o.kind==="item"){
-      ctx.shadowColor = "rgba(255,220,120,0.7)";
-      ctx.shadowBlur = 10;
-    }
+    ctx.translate(cx,cy);
+    const pulse = 1 + Math.sin(Date.now()/220 + o.x*0.05)*0.05;
+    ctx.scale(pulse,pulse);
+
+    const grd = ctx.createRadialGradient(0,0,size*0.08,0,0,size*0.66);
+    grd.addColorStop(0,"rgba(255,255,255,0.85)");
+    grd.addColorStop(0.5, glowColor+"55");
+    grd.addColorStop(1,"rgba(255,255,255,0.02)");
+    ctx.fillStyle = grd;
+    ctx.beginPath(); ctx.arc(0,0,size*0.62,0,Math.PI*2); ctx.fill();
+
+    ctx.strokeStyle = glowColor; ctx.lineWidth=3;
+    ctx.shadowColor = glowColor; ctx.shadowBlur=14;
+    ctx.beginPath(); ctx.arc(0,0,size*0.56,0,Math.PI*2); ctx.stroke();
+    ctx.shadowBlur=0;
+
+    ctx.font = Math.round(size*0.85)+"px sans-serif";
     ctx.fillText(o.emoji, 0, 2);
     ctx.restore();
   });
+}
+
+function drawParticlesAndFloaters(){
+  particles.forEach(p=>{
+    const a = 1 - p.age/p.life;
+    ctx.globalAlpha = a;
+    ctx.fillStyle = p.color;
+    ctx.beginPath(); ctx.arc(p.x,p.y,p.r*a,0,Math.PI*2); ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+  ctx.textAlign="center"; ctx.textBaseline="middle";
+  floaters.forEach(f=>{
+    const a = 1 - f.age/f.life;
+    ctx.globalAlpha = a;
+    ctx.font = "800 15px 'Baloo 2', sans-serif";
+    ctx.lineWidth=5; ctx.strokeStyle="rgba(0,0,0,0.5)";
+    ctx.strokeText(f.text, f.x, f.y);
+    ctx.fillStyle = f.color;
+    ctx.fillText(f.text, f.x, f.y);
+  });
+  ctx.globalAlpha = 1;
 }
 
 /* ============================================================
@@ -573,6 +621,12 @@ function update(dt){
   // screen shake decay
   if(shakeT>0) shakeT -= dt;
 
+  // particles & floaters
+  particles.forEach(p=>{ p.age+=dt; p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=200*dt; });
+  particles = particles.filter(p=>p.age<p.life);
+  floaters.forEach(f=>{ f.age+=dt; f.y+=f.vy*dt; });
+  floaters = floaters.filter(f=>f.age<f.life);
+
   // dilemma triggers
   if(!state.dilemmaTriggered.d800 && state.distance >= 800){
     state.dilemmaTriggered.d800 = true;
@@ -600,6 +654,11 @@ function collectItem(o){
   if(o.key==="quran") state.stats.quran++;
   if(o.key==="tasbih") state.stats.tasbih++;
 
+  const cx = o.x+o.w/2, cy=o.y+o.h/2;
+  const label = (o.energy? `+${o.energy}% ❤️  `:"") + (o.pahala? `+${o.pahala} 🌙`:"");
+  addFloater(label.trim(), cx, cy-20, "#A8FF60");
+  burst(cx, cy, o.shield ? "#8AD6FF" : "#A8FF60", 14);
+
   if(o.shield){ synth.sfxCollectSpecial(); toast("📖 Aura Perlindungan!"); }
   else { synth.sfxCollectGood(); }
 }
@@ -610,6 +669,9 @@ function hitObstacle(o){
   // Sistem bersepadu: setiap halangan = Tenaga -20%, Ramadan Points -10
   state.energy = clamp(state.energy-20,0,100);
   state.pahala = Math.max(0,state.pahala-10);
+  const cx = o.x+o.w/2, cy=o.y+o.h/2;
+  addFloater("-20% ❤️  -10 🌙", cx, cy-20, "#FF6969");
+  burst(cx, cy, "#FF5B5B", 16);
   if(o.key==="burger"||o.key==="fries"||o.key==="soda"){
     state.stats.junk++;
     toast("😵 Batal Puasa!");
@@ -686,6 +748,7 @@ function render(){
   drawBackground();
   drawObjects();
   drawPlayer();
+  drawParticlesAndFloaters();
   ctx.restore();
 }
 
@@ -714,6 +777,8 @@ function startGame(){
   player.y = player.groundY - player.h;
   player.state = "run";
   objects = [];
+  particles = [];
+  floaters = [];
   spawnCooldown = 0.6;
   initBackground();
 

@@ -708,6 +708,7 @@ function showScreen(name){
 }
 
 function startGame(){
+  showScreen("game");
   resize();
   player.groundY = H*GROUND_RATIO;
   player.y = player.groundY - player.h;
@@ -716,13 +717,12 @@ function startGame(){
   spawnCooldown = 0.6;
   initBackground();
 
-  state.distance=0; state.energy=100; state.pahala=0; state.speed=4.4;
+  state.distance=0; state.energy=100; state.pahala=0; state.speed=STAGE.DAY.speed;
   state.running=true; state.paused=false; state.gameOver=false;
   state.shieldTime=0; state.slowTime=0;
   state.dilemmaTriggered={d800:false,d1500:false};
   state.stats={kurma:0,air:0,bintang:0,quran:0,tasbih:0,marah:0,distraksi:0,junk:0,helped:0,ran:0};
 
-  showScreen("game");
   updateHUD();
   lastT = 0;
   requestAnimationFrame(loop);

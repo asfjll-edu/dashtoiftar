@@ -50,6 +50,7 @@ html, body {
   position: relative;
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
   max-width: 520px;
   max-height: 920px;
   background: #F8FAFC;
@@ -59,6 +60,24 @@ html, body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+@media (max-width: 639px) {
+  #app-viewport {
+    border: none;
+    border-radius: 0;
+    max-width: 100vw;
+    max-height: 100dvh;
+    width: 100vw;
+    height: 100dvh;
+  }
+  .clean-card {
+    padding: 16px 14px;
+    gap: 12px;
+  }
+  .screen {
+    padding: 12px;
+  }
 }
 
 @media (min-width: 768px) {
@@ -874,6 +893,7 @@ const gameState = {
   paused: false,
   distance: 0,
   lives: 4,
+  maxLives: 4,
   score: 0,
   starsCollected: 0,
   questionsAnswered: 0,
@@ -979,7 +999,15 @@ function handleQuizAnswer(isCorrect) {
     audio.sfxCorrect();
     gameState.score += 100;
     gameState.questionsAnswered++;
-    showToast("✨ Jawapan Tepat! +100 SKOR");
+    
+    // Pulihkan 1 nyawa jika tidak maksimum
+    if (gameState.lives < gameState.maxLives) {
+      gameState.lives++;
+      showToast("✨ Jawapan Tepat! +100 SKOR & +1 NYAWA ❤️");
+    } else {
+      showToast("✨ Jawapan Tepat! +100 SKOR");
+    }
+
     if (gameState.questionsAnswered >= gameState.requiredQuestions) {
       setTimeout(() => endGame(true), 400);
       return;
@@ -1032,14 +1060,15 @@ function updateGame() {
     }
   }
 
-  player.animFrame += 0.2;
+  player.animFrame += 0.25;
 
-  // SPAWN OBSTACLES (Optimized: avoid spawning right near checkpoints)
+  // SPAWN OBSTACLES (Zon selamat diperketatkan tanpa halangan berdekatan checkpoint)
   if (gameState.distance >= nextSpawnDist) {
     const distToCheckpoint = nextCheckpointDist - gameState.distance;
-    // Buffer zone: do not spawn obstacle right before or inside checkpoint gate
-    if (distToCheckpoint > 35 || distToCheckpoint < -25) {
-      nextSpawnDist = gameState.distance + randInt(30, 52);
+    
+    // Kawasan zon selamat 80m sebelum & 50m selepas checkpoint
+    if (distToCheckpoint > 80 || distToCheckpoint < -50) {
+      nextSpawnDist = gameState.distance + randInt(32, 55);
       const spawnX = W + 60;
       const rType = Math.random();
 
@@ -1076,10 +1105,14 @@ function updateGame() {
     }
   }
 
-  // SPAWN CHECKPOINT (Increased spacing)
+  // SPAWN CHECKPOINT & PADAM HALANGAN BERDEKATAN
   if (gameState.distance >= nextCheckpointDist && gameState.questionsAnswered < gameState.requiredQuestions) {
     nextCheckpointDist = gameState.distance + 250;
     const spawnX = W + 80;
+    
+    // Pastikan tiada halangan sedia ada yang terlalu dekat dengan gerbang
+    gameObjects = gameObjects.filter(obj => obj.type === "star" || Math.abs(obj.x - spawnX) > 120);
+
     gameObjects.push({
       x: spawnX, y: getTerrainY(spawnX) - 100,
       w: 70, h: 100, type: "checkpoint",
@@ -1177,27 +1210,83 @@ function drawPlayer() {
   const py = player.y;
 
   if (player.state === "slide") {
-    ctx.fillStyle = "#F97316";
-    drawRoundRect(ctx, px, py + 4, player.w, player.h - 4, 10);
-    ctx.fill();
-    ctx.fillStyle = "#FFE0B2";
-    ctx.beginPath();
-    ctx.arc(px + player.w - 8, py + 10, 8, 0, Math.PI * 2);
-    ctx.fill();
-  } else {
-    ctx.fillStyle = "#10B981";
-    drawRoundRect(ctx, px + 4, py + 18, player.w - 8, player.h - 18, 8);
+    // Gaya Tunduk/Slaid
+    ctx.fillStyle = "#047857";
+    drawRoundRect(ctx, px, py + 8, player.w, player.h - 8, 8);
     ctx.fill();
 
+    // Muka & Kopiah semasa Tunduk
     ctx.fillStyle = "#FFCC80";
     ctx.beginPath();
-    ctx.arc(px + player.w / 2, py + 12, 11, 0, Math.PI * 2);
+    ctx.arc(px + player.w - 10, py + 12, 9, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.fillStyle = "#FFFFFF";
+    ctx.fillStyle = "#10B981";
     ctx.beginPath();
-    ctx.arc(px + player.w / 2, py + 6, 11, Math.PI, 0);
+    ctx.arc(px + player.w - 10, py + 6, 9, Math.PI, 0);
     ctx.fill();
+  } else {
+    // Animasi Larian & Baju (Enjut Badan)
+    const bob = player.state === "run" ? Math.abs(Math.sin(player.animFrame * 0.8)) * 3 : 0;
+    const bodyY = py + bob;
+
+    const legSwing = player.state === "run" ? Math.sin(player.animFrame * 0.8) * 0.6 : 0.2;
+    const armSwing = player.state === "run" ? Math.sin(player.animFrame * 0.8) * 0.5 : 0;
+
+    // Kaki Belakang
+    ctx.save();
+    ctx.translate(px + 14, bodyY + 34);
+    ctx.rotate(-legSwing);
+    ctx.fillStyle = "#065F46";
+    ctx.fillRect(-3, 0, 7, 18);
+    // Kasut
+    ctx.fillStyle = "#1E293B";
+    ctx.fillRect(-3, 15, 10, 5);
+    ctx.restore();
+
+    // Kaki Hadapan
+    ctx.save();
+    ctx.translate(px + 22, bodyY + 34);
+    ctx.rotate(legSwing);
+    ctx.fillStyle = "#047857";
+    ctx.fillRect(-3, 0, 7, 18);
+    // Kasut
+    ctx.fillStyle = "#1E293B";
+    ctx.fillRect(-3, 15, 10, 5);
+    ctx.restore();
+
+    // Badan / Baju Kurang/Melayu Hijau
+    ctx.fillStyle = "#10B981";
+    drawRoundRect(ctx, px + 8, bodyY + 18, player.w - 16, 18, 5);
+    ctx.fill();
+
+    // Tangan Belakang
+    ctx.save();
+    ctx.translate(px + 12, bodyY + 22);
+    ctx.rotate(armSwing);
+    ctx.fillStyle = "#059669";
+    ctx.fillRect(-2, 0, 5, 14);
+    ctx.restore();
+
+    // Tangan Hadapan
+    ctx.save();
+    ctx.translate(px + 24, bodyY + 22);
+    ctx.rotate(-armSwing);
+    ctx.fillStyle = "#10B981";
+    ctx.fillRect(-2, 0, 5, 14);
+    ctx.restore();
+
+    // Kepala / Muka
+    ctx.fillStyle = "#FFCC80";
+    ctx.beginPath();
+    ctx.arc(px + player.w / 2, bodyY + 12, 10, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Songkok / Kopiah Hijau Zamrud
+    ctx.fillStyle = "#047857";
+    ctx.fillRect(px + player.w / 2 - 9, bodyY, 18, 7);
+    ctx.fillStyle = "#FBBF24";
+    ctx.fillRect(px + player.w / 2 - 9, bodyY + 6, 18, 2);
   }
 
   ctx.restore();

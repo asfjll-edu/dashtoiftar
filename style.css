@@ -22,9 +22,174 @@ html,body{
   color: var(--cream);
 }
 
-body{
-  background: #060312;
+/* ============================================================
+   NINTENDO SWITCH STYLE CONSOLE
+============================================================ */
+:root{
+  --joycon-red: #FF3C5C;
+  --joycon-red-dark: #C21F3C;
+  --joycon-blue: #1AB9E8;
+  --joycon-blue-dark: #0E7FAE;
 }
+
+.console-body{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap: 14px;
+  width:100%;
+  height:100%;
+}
+
+/* ---------- SCREEN GLOSS (glass reflection) ---------- */
+.screen-gloss{
+  position:absolute; inset:0;
+  z-index: 3;
+  pointer-events:none;
+  background: linear-gradient(115deg,
+    rgba(255,255,255,0.22) 0%,
+    rgba(255,255,255,0.06) 18%,
+    rgba(255,255,255,0) 34%,
+    rgba(255,255,255,0) 78%,
+    rgba(255,255,255,0.08) 100%);
+  mix-blend-mode: screen;
+}
+
+/* ---------- JOY-CON SHARED ---------- */
+.joycon{
+  position:relative;
+  display:none; /* shown on desktop via media query below */
+  flex-direction:column;
+  align-items:center;
+  justify-content:space-between;
+  width: 108px;
+  height: 100%;
+  max-height: 640px;
+  padding: 26px 0;
+  border-radius: 54px;
+  box-shadow:
+    inset 0 2px 3px rgba(255,255,255,0.35),
+    inset 0 -6px 14px rgba(0,0,0,0.35),
+    0 12px 30px rgba(0,0,0,0.5);
+}
+.joycon-left{
+  background: linear-gradient(160deg, var(--joycon-red) 0%, var(--joycon-red-dark) 100%);
+  border-top-right-radius: 20px;
+  border-bottom-right-radius: 20px;
+}
+.joycon-right{
+  background: linear-gradient(160deg, var(--joycon-blue) 0%, var(--joycon-blue-dark) 100%);
+  border-top-left-radius: 20px;
+  border-bottom-left-radius: 20px;
+}
+.joycon-cap{
+  width: 60px; height:6px;
+  border-radius:4px;
+  background: rgba(0,0,0,0.2);
+}
+.joycon-led{
+  width:8px; height:8px;
+  border-radius:50%;
+  background: rgba(255,255,255,0.9);
+  box-shadow: 0 0 8px 2px rgba(255,255,255,0.7);
+}
+
+/* ---------- ANALOG STICK ---------- */
+.stick{
+  width: 54px; height:54px;
+  border-radius:50%;
+  background: radial-gradient(circle at 35% 30%, rgba(0,0,0,0.15), rgba(0,0,0,0.5));
+  box-shadow: inset 0 3px 6px rgba(0,0,0,0.6), 0 2px 4px rgba(255,255,255,0.15);
+  display:flex; align-items:center; justify-content:center;
+}
+.stick-ball{
+  width: 40px; height:40px;
+  border-radius:50%;
+  background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.5), rgba(20,20,20,0.9));
+  box-shadow: 0 0 10px 2px rgba(255,255,255,0.25), inset 0 -3px 5px rgba(0,0,0,0.5);
+  transition: transform 0.08s ease;
+}
+.stick:active .stick-ball, .stick.pressed .stick-ball{
+  transform: scale(0.88) translateY(2px);
+}
+
+/* ---------- D-PAD ---------- */
+.dpad{
+  position:relative;
+  width: 92px; height:92px;
+  display:grid;
+  grid-template-columns: repeat(3,1fr);
+  grid-template-rows: repeat(3,1fr);
+}
+.dpad-btn{
+  border:none;
+  background: linear-gradient(160deg,#2b2b2b,#111);
+  color:#eee;
+  font-size:14px;
+  cursor:pointer;
+  box-shadow: inset 0 1px 1px rgba(255,255,255,0.15), 0 2px 3px rgba(0,0,0,0.5);
+  transition: transform 0.06s ease, box-shadow 0.06s ease, filter 0.06s ease;
+}
+.dpad-up{ grid-column:2; grid-row:1; border-radius: 8px 8px 3px 3px; }
+.dpad-left{ grid-column:1; grid-row:2; border-radius: 8px 3px 3px 8px; }
+.dpad-right{ grid-column:3; grid-row:2; border-radius: 3px 8px 8px 3px; }
+.dpad-down{ grid-column:2; grid-row:3; border-radius: 3px 3px 8px 8px; }
+.dpad-btn:active, .dpad-btn.pressed{
+  transform: scale(0.88);
+  filter: brightness(1.6);
+  box-shadow: inset 0 3px 6px rgba(0,0,0,0.7), 0 0 12px 2px rgba(255,255,255,0.5);
+}
+
+/* ---------- SIDE BUTTONS (minus / plus) ---------- */
+.side-btn{
+  width:30px; height:30px;
+  border-radius:50%;
+  border:none;
+  background: rgba(0,0,0,0.28);
+  color:#fff;
+  font-size:16px; font-weight:800;
+  cursor:pointer;
+  box-shadow: inset 0 1px 2px rgba(255,255,255,0.25), 0 2px 4px rgba(0,0,0,0.4);
+  transition: transform 0.06s ease, filter 0.06s ease;
+}
+.side-btn:active, .side-btn.pressed{
+  transform: scale(0.85);
+  filter: brightness(1.7);
+  box-shadow: 0 0 12px 3px rgba(255,255,255,0.6);
+}
+
+/* ---------- ABXY ---------- */
+.abxy{
+  position:relative;
+  width: 96px; height:96px;
+  display:grid;
+  grid-template-columns: repeat(3,1fr);
+  grid-template-rows: repeat(3,1fr);
+  place-items:center;
+}
+.abxy-btn{
+  width: 32px; height:32px;
+  border-radius:50%;
+  border:none;
+  font-weight:800;
+  font-size:13px;
+  cursor:pointer;
+  background: linear-gradient(160deg,#1a1a1a,#000);
+  color: #FFD24A;
+  box-shadow: inset 0 1px 2px rgba(255,255,255,0.2), 0 2px 4px rgba(0,0,0,0.5);
+  transition: transform 0.06s ease, box-shadow 0.06s ease, filter 0.06s ease;
+}
+.btn-x{ grid-column:2; grid-row:1; }
+.btn-y{ grid-column:1; grid-row:2; }
+.btn-a{ grid-column:3; grid-row:2; }
+.btn-b{ grid-column:2; grid-row:3; }
+.abxy-btn:active, .abxy-btn.pressed{
+  transform: scale(0.85);
+  filter: brightness(1.7);
+  box-shadow: inset 0 3px 6px rgba(0,0,0,0.7), 0 0 14px 3px rgba(255,210,74,0.7);
+}
+
+/* On narrower screens keep the semi-transparent touch overlay defined elsewhere for #mobile-controls */
 
 #console-frame{
   position:relative;
@@ -76,6 +241,13 @@ body{
 
 @media (orientation: landscape) and (max-height: 520px){
   #game-wrap{ aspect-ratio: 16/9; max-width: 820px; height:min(100%,460px); }
+}
+
+/* ---------- SHOW JOY-CONS ON WIDE SCREENS (must come after base rules above) ---------- */
+@media (min-width: 900px){
+  .joycon{ display:flex; }
+  #console-frame{ max-width: 900px; }
+  #mobile-controls{ display:none !important; }
 }
 
 #game-canvas{

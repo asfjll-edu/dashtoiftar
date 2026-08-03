@@ -10,6 +10,9 @@
 </head>
 <body>
 
+<div id="console-frame">
+<div class="console-led"></div>
+<div class="console-brand">DASH-TO-IFTAR HANDHELD</div>
 <div id="game-wrap">
 
   <!-- ============ SKRIN NAMA ============ -->
@@ -83,9 +86,9 @@
   <!-- ============ SKRIN KEPUTUSAN ============ -->
   <div id="screen-result" class="screen">
     <div class="glass-card result-card" id="certificate">
-      <div class="lantern-scene">🏮 🕌 🏮</div>
-      <h2 class="result-title">Alhamdulillah!</h2>
-      <p class="result-sub">Adam sampai ke rumah untuk berbuka puasa</p>
+      <canvas id="family-canvas" width="300" height="140"></canvas>
+      <h2 class="result-title" id="result-title">Alhamdulillah!</h2>
+      <p class="result-sub" id="result-sub">Adam sampai ke rumah untuk berbuka puasa</p>
 
       <div class="cert-box">
         <div class="cert-header">🌟 SIJIL WIRA RAMADAN 🌟</div>
@@ -106,6 +109,7 @@
     </div>
   </div>
 
+</div>
 </div>
 
 <script src="game.js"></script>

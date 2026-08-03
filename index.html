@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Dash to Iftar 🌙</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="game-wrap">
+
+  <!-- ============ SKRIN NAMA ============ -->
+  <div id="screen-name" class="screen active">
+    <div class="glass-card intro-card">
+      <div class="moon-deco">🌙</div>
+      <h1 class="title-game">DASH TO<br><span>IFTAR</span></h1>
+      <p class="subtitle">Bantu Adam berlari pulang sebelum azan Maghrib berkumandang!</p>
+      <input id="input-name" class="name-input" type="text" maxlength="14" placeholder="Tulis nama kamu di sini...">
+      <button id="btn-start" class="btn-primary">🏃‍♂️ Mula Berlari</button>
+      <div class="controls-hint">
+        <span>⌨️ SPACE / ↑ = Lompat &nbsp;•&nbsp; ↓ = Gelongsor</span>
+        <span>📱 Ketik Kiri = Lompat &nbsp;•&nbsp; Ketik Kanan = Gelongsor</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SKRIN PERMAINAN ============ -->
+  <div id="screen-game" class="screen">
+    <canvas id="game-canvas"></canvas>
+
+    <!-- HUD -->
+    <div id="hud">
+      <div class="bar-row">
+        <span class="bar-icon">❤️</span>
+        <div class="bar-track">
+          <div id="bar-energy" class="bar-fill bar-energy"></div>
+        </div>
+        <span id="txt-energy" class="bar-txt">100%</span>
+      </div>
+      <div class="bar-row">
+        <span class="bar-icon">🌙</span>
+        <div class="bar-track">
+          <div id="bar-pahala" class="bar-fill bar-pahala"></div>
+        </div>
+        <span id="txt-pahala" class="bar-txt">0 pt</span>
+      </div>
+    </div>
+
+    <div id="distance-hud">📍 <span id="txt-distance">0</span>m / 2000m</div>
+
+    <button id="btn-mute" class="icon-btn">🔊</button>
+
+    <!-- Toast mesej -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Kawalan mobile -->
+    <div id="mobile-controls">
+      <div id="btn-jump" class="touch-btn">⬆️<span>Lompat</span></div>
+      <div id="btn-slide" class="touch-btn">⬇️<span>Gelongsor</span></div>
+    </div>
+
+    <!-- Dilema Moral -->
+    <div id="dilemma-overlay" class="dilemma-overlay">
+      <div class="glass-card dilemma-card">
+        <div id="dilemma-timer" class="dilemma-timer">3</div>
+        <div id="dilemma-emoji" class="dilemma-emoji">😿</div>
+        <div id="dilemma-text" class="dilemma-text">Kucing lapar!</div>
+        <div class="dilemma-choices">
+          <button id="btn-choice-left" class="dilemma-btn help-btn">
+            🤝 Tolong<br><small>Tenaga -10 | Pahala +50</small>
+          </button>
+          <button id="btn-choice-right" class="dilemma-btn run-btn">
+            🏃 Terus Lari<br><small>Pahala -20</small>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SKRIN KEPUTUSAN ============ -->
+  <div id="screen-result" class="screen">
+    <div class="glass-card result-card" id="certificate">
+      <div class="lantern-scene">🏮 🕌 🏮</div>
+      <h2 class="result-title">Alhamdulillah!</h2>
+      <p class="result-sub">Adam sampai ke rumah untuk berbuka puasa</p>
+
+      <div class="cert-box">
+        <div class="cert-header">🌟 SIJIL WIRA RAMADAN 🌟</div>
+        <div class="cert-name" id="cert-name">-</div>
+        <div class="cert-rank" id="cert-rank">-</div>
+        <div class="cert-stats">
+          <div>🌙 Pahala: <span id="cert-pahala">0</span> pt</div>
+          <div>❤️ Baki Tenaga: <span id="cert-energy">0</span>%</div>
+        </div>
+      </div>
+
+      <div id="reflection-list" class="reflection-list"></div>
+
+      <div class="result-buttons">
+        <button id="btn-screenshot" class="btn-secondary">📸 Simpan Sijil</button>
+        <button id="btn-restart" class="btn-primary">🔄 Main Semula</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="game.js"></script>
+</body>
+</html>
